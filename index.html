@@ -1,0 +1,205 @@
+<html>
+<head>
+<title>Dynamic Google Chart</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </link>
+    <style>
+    .left-area {
+    	width:50%;
+    	float:left;
+    }
+    .right-area {
+    	width: 50%;
+    	float: right;
+    }
+    .right-area-inner {
+    	margin:0 auto;
+    	width:50%;
+    }
+    #filter_wrapper label {
+	    display: block;
+	    font-size: 16px;
+	    color: #666;
+	    line-height: 20px;
+	    padding: 0;
+	    margin: 0;
+	}
+	#filter_wrapper select {
+		background: #e8e8e8;
+	    width: 100%;
+	    font-size: 16px;
+	    height: 35px;
+	    line-height: 35px;
+	    color: #666;
+	    border: 1px solid #e8e8e8;
+	    min-height: 35px;
+	    display: block;
+	    margin-bottom: 10px;
+	    border-radius: 0px;
+	}
+	#shareFB {
+		float: right;
+	    margin: 1%;
+	    padding: 1%;
+	    display: inline-block;
+	    color:#fff;
+	}
+    </style>
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>	
+    <script type="text/javascript">
+		google.load("visualization", "1", {packages:["corechart"]});
+		var googleColumnChart;
+		function drawBarChart(){
+			
+			var data = '[{"Institute":"ACET","Year":"2014","Selected":"12","Applied":"43"},{"Institute":"GNDU","Year":"2014","Selected":"12","Applied":"70"},{"Institute":"IIM","Year":"2014","Selected":"6","Applied":"37"},{"Institute":"Sai","Year":"2014","Selected":"15","Applied":"83"},{"Institute":"DAVIET","Year":"2014","Selected":"16","Applied":"31"},{"Institute":"ACET","Year":"2015","Selected":"16","Applied":"53"},{"Institute":"GNDU","Year":"2015","Selected":"16","Applied":"20"},{"Institute":"IIM","Year":"2015","Selected":"17","Applied":"60"},{"Institute":"Sai","Year":"2015","Selected":"10","Applied":"89"},{"Institute":"DAVIET","Year":"2015","Selected":"19","Applied":"26"},{"Institute":"ACET","Year":"2016","Selected":"19","Applied":"40"},{"Institute":"GNDU","Year":"2016","Selected":"19","Applied":"23"},{"Institute":"IIM","Year":"2016","Selected":"18","Applied":"78"},{"Institute":"Sai","Year":"2016","Selected":"18","Applied":"54"},{"Institute":"DAVIET","Year":"2016","Selected":"14","Applied":"55"}]';
+
+	      	var selectedYear = jQuery( "select[name=year_filter]" ).val();
+	      	var selectedIns = jQuery( "select[name=ins_filter]" ).val();
+
+	      	var chartTitle = "No. of students selected for Job Interview <br/> Year = "+selectedYear+"<br/>Institute = "+selectedIns;
+	      	jQuery("#chart_title").html(chartTitle);
+
+	      	barChartData = JSON.parse(data);
+	      	var barChartData = jQuery.grep(barChartData, function(v) {
+				return v.Year == selectedYear && v.Institute == selectedIns;
+			});
+			//console.log(barChartData);
+			var data = new google.visualization.DataTable();
+			data.addColumn("string", "Variable");
+			data.addColumn("number", "No of Students");
+			data.addColumn({type:"string", role:"style"});
+			data.addColumn({type:"string", role:"annotation"});
+			
+	      	data.addRow(['Applied', parseInt(barChartData[0].Applied),{ role: 'style' },barChartData[0].Applied]);
+			data.addRow(['Selected', parseInt(barChartData[0].Selected)	,{ role: 'style' },barChartData[0].Selected]);
+
+			var ChartColors = [];
+			ChartColors.push( "#007880","#3366CC");
+			var options = {
+				seriesType: "bars",
+				bar: {groupWidth: "75%"},
+				colors: ChartColors,
+				legend: { position: "top", alignment: "end",maxLines: 2 },
+				animation:{ duration: 400, easing: "out",startup: true},
+				tooltip: { isHtml: false },
+				width: "100%",
+				height: "450",
+				"chartArea": {
+					"left": "10%",
+					"top": "50",
+					"bottom": "14%",
+					"width": "100%",
+					"height": "100%"
+				},
+				
+				"vAxis": {
+					title:"No. of students",
+					minValue: 0,
+					gridlines: { count : 6 }
+				},
+				annotations: {
+				  textStyle: {
+					  color: "#fff", 
+					  opacity:1,
+					  fontSize:"20"
+					}
+				}
+			};
+			googleColumnChart = new google.visualization.ChartWrapper({
+	          chartType: 'ColumnChart',
+	          dataTable: data,
+	          options: options,
+	          containerId: 'chart_wrapper',            
+	        });
+			googleColumnChart.draw();
+			
+		}
+      	jQuery(document).ready(function() {
+      		jQuery.ajaxSetup({ cache: false });
+			jQuery.getScript('//connect.facebook.net/en_US/sdk.js', function(){
+			FB.init({
+				appId: '147682328670392',
+				version: 'v2.7' // or v2.1, v2.2, v2.3, ...
+			});     
+		});	
+      		drawBarChart();
+      		jQuery("select[name=year_filter]").on("change", function() {
+				drawBarChart(); 
+			});
+		    jQuery("select[name=ins_filter]").on("change", function() {
+				drawBarChart(); 
+			}); 
+			jQuery( "#shareFB" ).click(function(e) {
+				e.preventDefault();
+				var d = new Date();
+				d = Number(d);
+				var chart = googleColumnChart.getChart();
+				//window.open(chart.getImageURI());
+				var image = chart.getImageURI();
+
+				jQuery.ajax({
+						type: "POST",
+						url: "http://oxosolutions.us/fb_share/index.php",
+						data: {
+							"imageId":d,
+							"image": image
+						},
+						success:function(data) {
+							console.log(data);
+							FB.ui({ 
+								method: 'share_open_graph', 
+								action_type: 'og.shares', 
+								action_properties: 
+										JSON.stringify({ 
+											object : { 
+												'og:url': "", 
+												'og:title': 'Title goes Here', 
+												'og:description': 'Description', 
+												'og:image': 'http://oxosolutions.us/'+data, 
+												'og:image:width': '565', 
+												'og:image:height': '940' 
+											} 
+										}) 
+									}, function(response){ 
+										console.log(response); 
+							});
+							
+						}
+					});
+			});		
+      	});
+      	
+
+    </script>
+</head>
+<body>
+<div class="left-area">
+	<div id="chart_title"></div>
+	<div id="chart_wrapper"></div>
+	<div id="shareFB"><a href="" title="Share on Facebook"><button>Share on Facebook</button></a></div>
+</div>
+<div class="right-area">
+<div class="right-area-inner">
+<h2> Filters</h2>
+	<div id="filter_wrapper">
+		<label>Year</label>
+		<select name="year_filter">
+			<option value="2014">2014</option>
+			<option value="2015">2015</option>
+			<option value="2016">2016</option>
+		</select>
+		<label>Institute</label>
+		<select name="ins_filter">
+			<option value="ACET">ACET</option>
+			<option value="GNDU">GNDU</option>
+			<option value="IIM">IIM</option>
+			<option value="Sai">Sai</option>
+			<option value="DAVIET">DAVIET</option>
+		</select>
+	</div>
+</div>	
+</div>
+<div style="clear:both;"></div>
+</body>
+</html>
