@@ -3,7 +3,7 @@
 <title>Dynamic Google Chart</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    </link>
+   
     <style>
     .left-area {
     	width:50%;
@@ -15,7 +15,7 @@
     }
     .right-area-inner {
     	margin:0 auto;
-    	width:50%;
+    	width:70%;
     }
     #filter_wrapper label {
 	    display: block;
@@ -44,6 +44,10 @@
 	    padding: 1%;
 	    display: inline-block;
 	    color:#fff;
+	}
+	.instructions {
+		font-size:18px;
+		line-height: 24px;
 	}
     </style>
    <script type="text/javascript" src="https://www.google.com/jsapi"></script>	
@@ -118,11 +122,11 @@
       	jQuery(document).ready(function() {
       		jQuery.ajaxSetup({ cache: false });
 			jQuery.getScript('//connect.facebook.net/en_US/sdk.js', function(){
-			FB.init({
-				appId: '147682328670392',
-				version: 'v2.7' // or v2.1, v2.2, v2.3, ...
-			});     
-		});	
+				FB.init({
+					appId: '147682328670392',
+					version: 'v2.7' // or v2.1, v2.2, v2.3, ...
+				});     
+			});	
       		drawBarChart();
       		jQuery("select[name=year_filter]").on("change", function() {
 				drawBarChart(); 
@@ -140,25 +144,36 @@
 
 				jQuery.ajax({
 						type: "POST",
-						url: "http://oxosolutions.us/fb_share/index.php",
+						url: "save.php",
 						data: {
 							"imageId":d,
 							"image": image
 						},
 						success:function(data) {
 							console.log(data);
+							
+							/*FB.ui({
+							  method: 'share_open_graph',
+							  action_type: 'og.shares',
+							  scrape: true,
+							  action_properties: JSON.stringify({
+							    object:'http://oxosolutions.us/fb_share/',
+							  })
+							}, function(response){});*/
+
 							FB.ui({ 
 								method: 'share_open_graph', 
-								action_type: 'og.shares', 
+								action_type: 'og.shares',
+								scrape: true, 
 								action_properties: 
 										JSON.stringify({ 
 											object : { 
-												'og:url': "", 
+												'og:url': "http://oxosolutions.us", 
 												'og:title': 'Title goes Here', 
 												'og:description': 'Description', 
-												'og:image': 'http://oxosolutions.us/'+data, 
-												'og:image:width': '565', 
-												'og:image:height': '940' 
+												'og:image': 'http://oxosolutions.us/fb_share/'+data, 
+												'og:image:width': '632', 
+												'og:image:height': '450' 
 											} 
 										}) 
 									}, function(response){ 
@@ -198,6 +213,15 @@
 			<option value="DAVIET">DAVIET</option>
 		</select>
 	</div>
+<h2>Instruction for FB Developer</h2>
+	<div class="instructions">
+		<ul style="list-style-type:decimal;">
+			<li>By Click on "Share Button", Image of chart with values "Applied=43" and "Selected=12" has to share on facebook </li>
+			<li>Now change some filters. For eg. Year=2016 and Institute=GNDU</li>
+			<li>After filteration, By Click on "Share Button", Image of chart with values "Applied=23" and "Selected=19" has to share on facebook </li>
+			
+		</ul>
+	</div>	
 </div>	
 </div>
 <div style="clear:both;"></div>
